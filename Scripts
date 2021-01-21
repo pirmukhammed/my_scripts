@@ -1,0 +1,268 @@
+echo off | clip
+
+Очистка буфера
+===============================================================================
+C:\Users\PCName\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine
+Путь файла, где сохраняется все команды
+================================================================
+Get-ADComputer -Filter 'operatingsystem -like "Windows server" -and enabled -eq "true"' -Properties Name,Operatingsystem, OperatingSystemVersion, OperatingSystemServicePack,IPv4Address | Sort-Object -Property Operatingsystem | Select-Object -Property Name,Operatingsystem, OperatingSystemVersion, OperatingSystemServicePack, IPv4Address| ft -Wrap –Auto|Out-File C:\Users\PCName\Desktop\resultwithServicePack.txt
+Получить список серверов в домене с версией ОС, IP адресом и установленным Service Pack:
+=========================================================
+Get-ADComputer -Filter 'operatingsystem -like "Windows" -and enabled -eq "true"' -Properties Name,Operatingsystem, OperatingSystemVersion,IPv4Address, Passwordlastset | Sort-Object -Property Operatingsystem | Select-Object -Property Name,Operatingsystem, OperatingSystemVersion, IPv4Address,LastLogonDate, Passwordlastset| ft -Wrap -Auto|Out-File C:\Users\PCName\Desktop\resultwin.txt
+Вывод всех компов с датой изменений пароля
+=========================================================
+Get-ADComputer -Filter 'operatingsystem -like "Windows" -and enabled -eq "true"' -Properties Name,Operatingsystem, OperatingSystemVersion,IPv4Address, LastLogonDate | Sort-Object -Property Operatingsystem | Select-Object -Property Name,Operatingsystem, OperatingSystemVersion, IPv4Address,LastLogonDate| ft -Wrap -Auto|Out-File C:\Users\PCName\Desktop\LastLogonDate.txt
+Вывод всех компов с датой последнего входа
+==================================================================================
+Get-ADComputer -Filter 'operatingsystem -like "Windows" -and enabled -eq "true"' -Properties Name,Operatingsystem, OperatingSystemVersion,IPv4Address | Sort-Object -Property Operatingsystem | Select-Object -Property Name,Operatingsystem, OperatingSystemVersion, IPv4Address| ft -Wrap –AutoSize|Out-File C:\Users\PCName\Desktop\resultip.txt
+Получить список в домене с версией ОС, с IP адресом :
+=========================================
+get-adgroup -Filter * -Properties Name| Sort-Object -Property Name | Select-Object -Property Name| ft -Wrap -Auto|Out-File C:\Users\PCName\Desktop\resultallgroup.txt
+Получение списка всех групп в AD
+============================================================================================================
+Get-ADUser -filter * -properties Name, PasswordExpired, PasswordLastSet, PasswordNeverExpires, Description | ft Name, PasswordExpired, PasswordLastSet, PasswordNeverExpires, Description | ft -Wrap -Auto|Out-File C:\Users\PCName\Desktop\infoaboutpassword.txt
+Получение списка с информациями изменений о паролях
+================================================================================
+Get-ADUser -filter * -properties Name,Surname,GivenName,Description,whenChanged | ft Name,Surname,GivenName,Description,whenChanged| ft -Wrap -Auto|Out-File C:\Users\PCName\Desktop\userwithdescription.txt
+Получение списка пользователей с описанием
+===========================================================
+Get-ADUser -filter * -properties Name, title, Description | ft Name, title, Description | ft -Wrap -Auto|Out-File C:\Users\PCName\Desktop\infowithtitle.txt
+Получение списка пользователей с должностями(title)
+=================================================================================
+Get-ADUser -filter * -properties Name, telephoneNumber, Description, Department, whenChanged | ft Name, telephoneNumber, Description, Department, whenChanged | ft -Wrap -Auto|Out-File C:\Users\PCName\Desktop\Userwithphone.txt
+Получение списка пользователей с номерами телефонов (для мобильного телефона "MobilePhone")
+=============================
+get-acl S:* | Out-GridView
+Получение списка файлов из диска S:\ с правами доступов.
+====================================
+$lastday = ((Get-Date).AddDays(-90))
+Get-ADUser -filter {(whencreated -ge $lastday)} -properties name, whencreated,Description,Department| ft name, whencreated,Description,Department |Out-File C:\Users\PCName\Desktop\lastCreateUser.txt
+
+Получение списка пользователей созданные за последний 90 дней
+===============================================================
+foreach ($port in <Список портов через запятую или "1..50000">) {If (($a=Test-NetConnection <Имя сервера> -Port $port -WarningAction SilentlyContinue).tcpTestSucceeded -eq $true){ "TCP port $port is open!"}}
+
+Проверка сервера/пользователя на открытые порты
+======================
+Get-NetTCPConnection |
+Select-Object -Property LocalAddress, LocalPort,
+@{name='DNSName';expression={(Resolve-DnsName $.RemoteAddress).NameHost}},RemoteAddress, RemotePort, State,
+@{name='Process';expression={(Get-Process -Id $.OwningProcess).Name}}, CreationTime|
+Format-Table -AutoSize
+Получение список всех сетевых взаимодействий
+======================================================================================================================================================================
+Get-ADUser -SearchBase 'OU=Resigned staff,OU=KICB,DC=office,DC=kicbbsk' -filter * -property Name, ObjectClass, SamAccountName | ft Name, ObjectClass, SamAccountName
+Получение списка с описанием Resigned staff
+===============================================
+(Get-ADGroupMember -Identity USB_Disabled).Name
+-Получение списка пользователей из группы USB_Disabled
+==========================================================================================================================
+Get-WinEvent -listlog * -ErrorAction SilentlyContinue| select logname, RecordCount | where {$_.recordcount} | ft -autosize
+Получение активных списков лог файлов из windows
+=========================================================================
+Get-WinEvent -LogName "Имя лог файла из списка" -ComputerName Имя компа
+Получение записи из лог файла
+======================================================================================
+Get-Content -Path C:\Users\PCName\Desktop\LastLogonDate.txt -TotalCount 100
+Получение списка из текстового документа
+=================================================================================================================
+(Get-ADComputer -Filter *).Name | %{
+If (Test-Connection -ComputerName $_ -Count 1 -ErrorAction SilentlyContinue){
+Test-Connection -ComputerName $_ -Count 1 -ErrorAction SilentlyContinue|
+Select Address,ProtocolAddress,@{Name = 'Status';Expression = {'Online'}}}
+Else{$_ | Select @{Name = 'Address';Expression = {$_}},
+@{Name = 'ProtocolAddress';Expression = {'NoAddress'}},
+@{Name = 'Status';Expression = {'Offline'}}}Format-Table -AutoSize}|Out-File C:\Users\PCName\Desktop\UserOnline.txt
+Список пользователей с статусоа Online или Offline
+=========================================================================================================
+Get-WmiObject win32_networkadapterconfiguration | Select-Object -Property @{name='IPAddress';Expression={($_.IPAddress[0])}},MacAddress
+| Where IPAddress -NE $null
+Получает локальный MacAddress
+===========================================================================================================
+Get-NetAdapter -Name "Ethernet" |ft -Property SystemName, LinkSpeed, LinkLayerAddress
+Получает локальный MacAddress, (LinkLayerAddress это MacAddress)
+======================================================================================================================
+Get-ADUser -filter * -properties Name,DistinguishedName | Out-GridView
+Получение все свойства пользователей
+===================================================================================================================================
+get-aduser -Filter * -Properties Name,memberof,title,DistinguishedName,description,mail|
+Sort-Object -Property Name,memberof,title,DistinguishedName,description,mail |
+Select-Object -Property Name, memberof,title, DistinguishedName,description,mail|
+Out-GridView
+Получение всех данных о пользователях
+================================================================================================================================
+Get-WmiObject -class Win32_Share -computername <имя компов через запятую> |Select PSComputerName,Name,Path|Out-GridView
+Получение расшаренных файлов
+================================================================================================================================
+Get-ADUser -filter * -Properties name, memberof, Description, whenChanged|
+select name, @{n="memberof";e={($_.memberof -replace '(CN=|OU=|DC=)','')}}, Description, whenChanged|Out-GridView
+Получение списков пользователей c описанием и группой
+========================================================================================================================
+Get-ADGroup -filter * -properties CN, member, description|select-object CN, @{n="Member";e={($_.member -replace '(CN=|OU=|DC=)','')}}, description| Out-GridView
+Получение списков групп с описанием и пользователей
+==================================================================================================
+Get-CimInstance -ClassName SoftwareLicensingProduct -computerName <имя компов через запятую> |
+where PartialProductKey | select Pscomputername,Name,@{Name='LicenseStatus';Exp={
+switch ($_.LicenseStatus)
+{
+0 {'Unlicensed'}
+1 {'licensed'}
+2 {'OOBGrace'}
+3 {'OOTGrace'}
+4 {'NonGenuineGrace'}
+5 {'Notification'}
+6 {'ExtendedGrace'}
+Default {'Undetected'}
+}
+#EndOfCaltulatedProperty
+}}|Out-GridView
+Проверка лицензий windows при условий что включена служба WinRM
+=====================================================================================================
+get-aduser -Filter * -Properties Name,memberof,title,DistinguishedName,description,mail,whenchanged,department|
+Select-Object -Property Name, @{n="MemberOf";e={($.memberof -replace '(CN=|OU=|DC=)','')}},title,
+@{n="DistinguishedName";e={($.DistinguishedName -replace '(CN=|OU=|DC=)','')}},description,mail,whenchanged, department|Out-GridView
+Получение списка пользователей с деталями списка групп
+=============================================================
+Get-LocalGroup |
+ForEach-Object {
+$group = $_
+return [PSCustomObject]@{
+"Group" = $group.Name
+"Members" = $group | Get-LocalGroupMember | Select-Object -ExpandProperty "Name"
+}
+}
+get-adcomputer -Filter * -Properties Name,memberof,DistinguishedName,description,whenchanged,ipv4address|
+Select-Object -Property Name, @{n="MemberOf";e={($.memberof -replace '(CN=|OU=|DC=)','')}},
+@{n="DistinguishedName";e={($.DistinguishedName -replace '(CN=|OU=|DC=)','')}},description,whenchanged,ipv4address|Out-GridView
+param (
+[string]$LDAPFilter = '(name=*)'
+)
+
+$wmiQuery = "select IPAddress, DefaultIPGateway from Win32_NetworkAdapterConfiguration where IPEnabled=TRUE and DHCPEnabled=FALSE"
+
+$computers = (Get-ADComputer -LDAPFilter $LDAPFilter)
+foreach ($computer in $computers) {
+
+$networkAdapters = (Get-WmiObject -ErrorAction SilentlyContinue -ComputerName $computer.DNSHostName -Query $wmiQuery)
+foreach ($networkAdapter in $networkAdapters) {
+foreach ($ip in $networkAdapter.IPAddress)
+{
+if ($ip -match ".")
+{
+Write-Host $($computer.DNSHostName), $ip }
+}
+}
+}
+
+получение компов с статистическим ip
+=================================================================================
+Function port-scan-tcp {
+param($hosts,$ports)
+if (!$ports) {
+Write-Host "usage: test-port-tcp <host|hosts> <port|ports>"
+Write-Host " e.g.: test-port-tcp 192.168.1.2 445`n"
+return
+}
+$out = ".\scanresults.txt"
+foreach($p in [array]$ports) {
+foreach($h in [array]$hosts) {
+$x = (gc $out -EA SilentlyContinue | select-string "^$h,tcp,$p,")
+if ($x) {
+gc $out | select-string "^$h,tcp,$p,"
+continue
+}
+$msg = "$h,tcp,$p,"
+$t = new-Object system.Net.Sockets.TcpClient
+$c = $t.ConnectAsync($h,$p)
+for($i=0; $i -lt 10; $i++) {
+if ($c.isCompleted) { break; }
+sleep -milliseconds 100
+}
+$t.Close();
+$r = "Filtered"
+if ($c.isFaulted -and $c.Exception -match "actively refused") {
+$r = "Closed"
+} elseif ($c.Status -eq "RanToCompletion") {
+$r = "Open"
+}
+$msg += $r
+Write-Host "$msg"
+echo $msg >>$out
+}
+}
+}
+.NET 4.5
+Examples:
+test-port-tcp 10.10.0.1 137
+test-port-tcp 10.10.0.1 (135,137,445)
+test-port-tcp (gc .\ips.txt) 137
+test-port-tcp (gc .\ips.txt) (135,137,445)
+0..255 | foreach { test-port-tcp 10.10.0.$_ 137 }
+0..255 | foreach { test-port-tcp 10.10.0.$_ (135,137,445) }
+tcp сканер ip и port
+https://github.com/InfosecMatter/Minimalistic-offensive-security-tools
+=====================================================================
+Function port-scan-udp {
+param($hosts,$ports)
+if (!$ports) {
+Write-Host "usage: test-port-udp <host|hosts> <port|ports>"
+Write-Host " e.g.: test-port-udp 192.168.1.2 445`n"
+return
+}
+$out = ".\scanresults.txt"
+foreach($p in [array]$ports) {
+foreach($h in [array]$hosts) {
+$x = (gc $out -EA SilentlyContinue | select-string "^$h,udp,$p,")
+if ($x) {
+gc $out | select-string "^$h,udp,$p,"
+continue
+}
+$msg = "$h,udp,$p,"
+$u = new-object system.net.sockets.udpclient
+$u.Client.ReceiveTimeout = 500
+$u.Connect($h,$p)
+Send a single byte 0x01
+[void]$u.Send(1,1)
+$l = new-object system.net.ipendpoint([system.net.ipaddress]::Any,0)
+$r = "Filtered"
+try {
+if ($u.Receive([ref]$l)) {
+# We have received some UDP data from the remote host in return
+$r = "Open"
+}
+} catch {
+if ($Error[0].ToString() -match "failed to respond") {
+# We haven't received any UDP data from the remote host in return
+# Let's see if we can ICMP ping the remote host
+if ((Get-wmiobject win32_pingstatus -Filter "address = '$h' and Timeout=1000 and ResolveAddressNames=false").StatusCode -eq 0) {
+# We can ping the remote host, so we can assume that ICMP is not
+# filtered. And because we didn't receive ICMP port-unreachable before,
+# we can assume that the remote UDP port is open
+$r = "Open"
+}
+} elseif ($Error[0].ToString() -match "forcibly closed") {
+# We have received ICMP port-unreachable, the UDP port is closed
+$r = "Closed"
+}
+}
+$u.Close()
+$msg += $r
+Write-Host "$msg"
+echo $msg >>$out
+}
+}
+}
+Examples:
+test-port-udp 10.10.0.1 137
+test-port-udp 10.10.0.1 (135,137,445)
+test-port-udp (gc .\ips.txt) 137
+test-port-udp (gc .\ips.txt) (135,137,445)
+0..255 | foreach { test-port-udp 10.10.0.$_ 137 }
+0..255 | foreach { test-port-udp 10.10.0.$_ (135,137,445) }
+udp сканер ip и port
+https://github.com/InfosecMatter/Minimalistic-offensive-security-tools
+=================================================================================================================
+Get-WmiObject win32_networkAdapterConfiguration -ComputerName <Список компов через запятую>|
+Select pscomputername,index,description,defaultipgateway,DHCPServer,DNSHostName|ft -AutoSize
+Получение ip "defaultipgateway" перечисленных компов
+======================================================
