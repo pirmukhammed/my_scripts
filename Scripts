@@ -266,3 +266,37 @@ Get-WmiObject win32_networkAdapterConfiguration -ComputerName <Список ко
 Select pscomputername,index,description,defaultipgateway,DHCPServer,DNSHostName|ft -AutoSize
 Получение ip "defaultipgateway" перечисленных компов
 ======================================================
+##set watcher.Path to match the folder you want to monitor
+##watcher.Filter to be set to wildcard, you can exclude file types from ### filesystemwatcher exclude files section
+##watcher.IncludeSubdirectories to be true, you can exclude directories from ### filesystemwatcher exclude directory section
+$watcher = New-Object System.IO.FileSystemWatcher
+$watcher.Path = “указать путь к файлу”
+$watcher.Filter = “*.*”
+$watcher.IncludeSubdirectories = $true
+$watcher.EnableRaisingEvents = $true
+#what to do when a event is detected
+$action = {
+$fileName = Split-Path $Event.SourceEventArgs.FullPath -leaf
+$path = $Event.SourceEventArgs.FullPath
+### filesystemwatcher exclude files
+### for excluding multiple file types use if (-not ($fileName -like ‘*.resources’) -and -not ($fileName -like ‘*.otherextension’))###
+
+if (-not ($fileName -like ‘*.resources’) ) {
+
+$changeType = $Event.SourceEventArgs.ChangeType
+$logline = “$(Get-Date), $changeType, $path”
+
+#write to log fileDocuments
+Add-content “указать путь хранения лога\monitor_changes.txt” -value $logline
+### filesystemwatcher exclude directory
+### for excluding multiple directories
+
+}
+}
+#what events to be watched
+Register-ObjectEvent $watcher “Created” -Action $action
+Register-ObjectEvent $watcher “Changed” -Action $action
+Register-ObjectEvent $watcher “Deleted” -Action $action
+Register-ObjectEvent $watcher “Renamed” -Action $action
+while ($true) {sleep 1}
+- Монитроинг указанного файла
