@@ -300,3 +300,6 @@ Register-ObjectEvent $watcher “Deleted” -Action $action
 Register-ObjectEvent $watcher “Renamed” -Action $action
 while ($true) {sleep 1}
 - Монитроинг указанного файла
+===================================================
+for /f %i in (iplist.txt) do @nslookup %i 1>>nslookup-results.txt 2>>nslookup-errors.txt
+- Получение списка с ошибкой команды nslookup
