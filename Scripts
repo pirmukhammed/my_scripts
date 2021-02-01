@@ -329,4 +329,4 @@ foreach ($objf1 in $f1)
 }
 set-content -path resultFile.txt -value $result
 #echo $result
--сравнение двух файлов из списка txt
+-сравнение двух файлов из списка txt https://www.mytechnote.ru/article/powershell-sravnenie-dvuh-tekstovyh-faylov-skript 
