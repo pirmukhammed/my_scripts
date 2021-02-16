@@ -26,17 +26,17 @@ Get-ADUser -filter * -properties Name, PasswordExpired, PasswordLastSet, Passwor
 Get-ADUser -filter * -properties Name,Surname,GivenName,Description,whenChanged | ft Name,Surname,GivenName,Description,whenChanged| ft -Wrap -Auto|Out-File C:\Users\PCName\Desktop\userwithdescription.txt
 Получение списка пользователей с описанием
 ===========================================================
-Get-ADUser -filter * -properties Name, title, Description | ft Name, title, Description | ft -Wrap -Auto|Out-File C:\Users\PCName\Desktop\infowithtitle.txt
+Get-ADUser -filter * -properties Name, title, Description | ft Name, title, Description | ft -Wrap -Auto|Out-File .\infowithtitle.txt
 Получение списка пользователей с должностями(title)
 =================================================================================
-Get-ADUser -filter * -properties Name, telephoneNumber, Description, Department, whenChanged | ft Name, telephoneNumber, Description, Department, whenChanged | ft -Wrap -Auto|Out-File C:\Users\PCName\Desktop\Userwithphone.txt
+Get-ADUser -filter * -properties Name, telephoneNumber, Description, Department, whenChanged | ft Name, telephoneNumber, Description, Department, whenChanged | ft -Wrap -Auto|Out-File .\Userwithphone.txt
 Получение списка пользователей с номерами телефонов (для мобильного телефона "MobilePhone")
 =============================
 get-acl S:* | Out-GridView
 Получение списка файлов из диска S:\ с правами доступов.
 ====================================
 $lastday = ((Get-Date).AddDays(-90))
-Get-ADUser -filter {(whencreated -ge $lastday)} -properties name, whencreated,Description,Department| ft name, whencreated,Description,Department |Out-File C:\Users\PCName\Desktop\lastCreateUser.txt
+Get-ADUser -filter {(whencreated -ge $lastday)} -properties name, whencreated,Description,Department| ft name, whencreated,Description,Department |Out-File .\lastCreateUser.txt
 
 Получение списка пользователей созданные за последний 90 дней
 ===============================================================
@@ -330,3 +330,59 @@ foreach ($objf1 in $f1)
 set-content -path resultFile.txt -value $result
 #echo $result
 -сравнение двух файлов из списка txt https://www.mytechnote.ru/article/powershell-sravnenie-dvuh-tekstovyh-faylov-skript 
+========================================================================================================================
+
+#берет компы из Active Directiry
+$servers = (Get-ADComputer -Filter *).name 
+#берет компы из текста 
+#$servers = Get-Content '.\iplist.txt'
+ForEach ($server in [array]$servers) {
+   # Ping the machine to see if it's on the network
+   $results = Get-WMIObject -query "select StatusCode from Win32_PingStatus where Address = '$server'" 
+   $responds = $false   
+   ForEach ($result in [array]$results) {
+      # If the machine responds break out of the result loop and indicate success
+      if ($result.statuscode -eq 0) {
+         $responds = $true
+         break
+      }
+   }
+         If ($responds) {
+      # Gather info from the server because it responds
+     
+     $connect = if (Test-Connection -computername $server -Count 1 -ErrorAction SilentlyContinue) { (Test-Connection -computername $server -Count 1 -ErrorAction SilentlyContinue| select ProtocolAddress) -replace ('(@)|({)|(ProtocolAddress=)|(})','')}
+     $description = if (get-adcomputer $server -ErrorAction SilentlyContinue) { (get-adcomputer $server -properties Description|Select-Object -property Description) -replace ('(@)|(Description=)|(logged on to)|(})', '' ) -replace ('{', ',') }
+     $distinguished_name = if (get-adcomputer $server -ErrorAction SilentlyContinue) { (get-adcomputer $server -properties distinguishedname|Select-Object -property distinguishedname) -replace ('(@)|(distinguishedname=)|(CN=|OU=|DC=)', '') }
+     $server_responds = Write-Output "$server,responds,"
+     $all = $server_responds += $connect += $description += $distinguished_name
+     $does_not_respond = "$server,does_not_respond"
+     Write-Output "$all"
+     echo "$all" >> ".online.txt"
+   } else {
+      # Let the user know we couldn't connect to the server
+     Write-Output "$server,does_not_respond"
+     echo "$server,does_not_respond" >> ".does_not_respond.txt"
+   } }
+- Проверка Active Directory через пинг 
+======================================
+$servers = Get-Content 'iplist.txt'
+ForEach ($server in $servers) {
+   # Ping the machine to see if it's on the network
+   $results = Get-WMIObject -query "select StatusCode from Win32_PingStatus where Address = '$server'" 
+   $responds = $false   
+   ForEach ($result in $results) {
+      # If the machine responds break out of the result loop and indicate success
+      if ($result.statuscode -eq 0) {
+         $responds = $true
+         break
+      }
+   }
+         If ($responds) {
+      # Gather info from the server because it responds
+      Write-Output "$server responds"
+   } else {
+      # Let the user know we couldn't connect to the server
+      Write-Output "$server does not respond"
+   }
+}
+-Проверка подключенных компов, есть ответ или нет
