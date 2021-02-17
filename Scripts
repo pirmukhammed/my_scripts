@@ -386,3 +386,46 @@ ForEach ($server in $servers) {
    }
 }
 -Проверка подключенных компов, есть ответ или нет
+=================================================
+$time = (Get-Date -Format "dddd MM/dd/yyyy HH:mm:ss") -replace ('(/)|( )|(:)', '_')
+$file = New-Item -ItemType "directory" -Path "Путь к файлу\$time"
+$servers = (Get-ADComputer -Filter *).name
+#$servers = Get-Content 'Путь к файлу\iplist.txt'
+ForEach ($server in [array]$servers) {
+   # Ping the machine to see if it's on the network
+   $results = Get-WMIObject -query "select StatusCode from Win32_PingStatus where Address = '$server'" 
+   $responds = $false   
+   ForEach ($result in [array]$results) {
+      # If the machine responds break out of the result loop and indicate success
+      if ($result.statuscode -eq 0) {
+         $responds = $true
+         break
+      }
+   }
+         If ($responds) {
+      # Gather info from the server because it responds
+     
+     $connect = if (Test-Connection -computername $server -Count 1 -ErrorAction SilentlyContinue) { (Test-Connection -computername $server -Count 1 -ErrorAction SilentlyContinue| select ProtocolAddress) -replace ('(@)|({)|(ProtocolAddress=)|(})','')}
+     $description = if (get-adcomputer $server -ErrorAction SilentlyContinue) { (get-adcomputer $server -properties Description|Select-Object -property Description) -replace ('(@)|(Description=)|(logged on to)|(})', '' ) -replace ('{', ',') }
+     $distinguished_name = if (get-adcomputer $server -ErrorAction SilentlyContinue) { (get-adcomputer $server -properties distinguishedname|Select-Object -property distinguishedname) -replace ('(@)|(distinguishedname=)|(CN=|OU=|DC=)', '') }
+     $server_responds = Write-Output "$server,responds,"
+     $all = $server_responds += $connect += $description += $distinguished_name
+     $does_not_respond = "$server,does_not_respond"
+     Write-Output "$all"
+     echo "$all" >> "Путь к файлу\$time\online.txt"
+   } else {
+      # Let the user know we couldn't connect to the server
+     Write-Output "$server,does_not_respond"
+     echo "$server,does_not_respond" >> "Путь к файлу\$time\online_does_not_respond.txt"
+   } 
+   }   
+ #archive file
+Compress-Archive -Path Путь к файлу\$time -DestinationPath Путь к файлу\$time.zip
+ #send mail
+Send-MailMessage -from "Почта отправителя" `
+                 -to "Почта получателя" `
+                 -subject "Sending the Attachment" `
+                 -body "Test Message." `
+                 -Attachment "Путь к файлу\$time.zip" `
+			     -smtpServer "Ваш smtp server"
+- Проверка Active Directory через пинг с отправкой на почту с правами админа
