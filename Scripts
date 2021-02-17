@@ -427,5 +427,5 @@ Send-MailMessage -from "Почта отправителя" `
                  -subject "Sending the Attachment" `
                  -body "Test Message." `
                  -Attachment "Путь к файлу\$time.zip" `
-			     -smtpServer "Ваш smtp server"
+	         -smtpServer "Ваш smtp server"
 - Проверка Active Directory через пинг с отправкой на почту с правами админа
