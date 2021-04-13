@@ -429,3 +429,45 @@ Send-MailMessage -from "Почта отправителя" `
                  -Attachment "Путь к файлу\$time.zip" `
 	         -smtpServer "Ваш smtp server"
 - Проверка Active Directory через пинг с отправкой на почту с правами админа
+=============================================================================================================================================================
+$servers = (Get-ADComputer -Filter *).name
+ForEach ($server in $servers) {
+Get-WmiObject SoftwareLicensingProduct -ComputerName $server | Select-Object -Property PSComputerName,Description,@{Name='LicenseStatus';Exp={
+switch ($_.LicenseStatus)
+{
+0 {'Unlicensed'}
+1 {'licensed'}
+2 {'OOBGrace'}
+3 {'OOTGrace'}
+4 {'NonGenuineGrace'}
+5 {'Notification'}
+6 {'ExtendedGrace'}
+Default {'Undetected'}}}}}
+- Проверка на лицензию с правами админа
+================================================================================
+foreach($server in (Get-ADComputer -filter *).name){Resolve-DnsName -Name $server}
+- Проверка AD на DNS Имена, если покажет ошибки, то эти компы могут быть не использованы в AD
+================================================================================
+$time = (Get-Date -Format "dddd MM/dd/yyyy HH:mm:ss") -replace ('(/)|( )|(:)', '_')
+$file = New-Item -ItemType "directory" -Path "C:\Users\pirmukhammeda\Documents\status_resigned\$time"
+$lastday = ((Get-Date).AddDays(-7)) 
+Get-ADUser -filter {(whenchanged -ge $lastday -and Description -eq "resigned")} -properties name, whenchanged,Description,Department| select name, whenchanged,Description,Department |Out-File C:\Users\pirmukhammeda\Documents\status_resigned\$time\lastResignedUsers.txt
+Send-MailMessage -from "Pirmukhammed Alimkhodzhaev <PirmukhammedA@kicb.net>" `
+                 -to "Pirmukhammed Alimkhodzhaev <PirmukhammedA@kicb.net>;Dair Ekeev <daire@kicb.net>;Nasibula Dautov <NasibD@kicb.net>;Almaz Mambetov <AlmazMa@kicb.net>" `
+                 -subject "last resigned users" `
+                 -body "Last Resigned Users." `
+                 -Attachment "C:\Users\pirmukhammeda\Documents\status_resigned\$time\lastResignedUsers.txt" `
+                 -smtpServer "kicbmail.office.kicbbsk" 
+- оповещение по почте о последней изменений статуса "resigned"
+=================================================================================================================================================================
+$servers = (Get-ADComputer -Filter *).name
+ForEach ($server in [array]$servers){
+Get-WmiObject -Class Win32_UserAccount -Filter  "LocalAccount='True'" -ComputerName $server -ErrorAction SilentlyContinue| ft Caption -autosize}
+- Проверка локальных групп
+=================================================================================================================================================
+$servers = (Get-ADComputer -Filter *).name
+ForEach ($server in $servers) {
+Get-WmiObject -Class Win32_Product -ComputerName $server -ErrorAction SilentlyContinue| select PSComputerName,Name,Version}
+- Получение всех установленных программ с правами админа
+===================================================================================================================================================
+
