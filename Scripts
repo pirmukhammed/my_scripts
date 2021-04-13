@@ -449,15 +449,15 @@ foreach($server in (Get-ADComputer -filter *).name){Resolve-DnsName -Name $serve
 - Проверка AD на DNS Имена, если покажет ошибки, то эти компы могут быть не использованы в AD
 ================================================================================
 $time = (Get-Date -Format "dddd MM/dd/yyyy HH:mm:ss") -replace ('(/)|( )|(:)', '_')
-$file = New-Item -ItemType "directory" -Path "C:\Users\pirmukhammeda\Documents\status_resigned\$time"
+$file = New-Item -ItemType "directory" -Path "Путь к файлу\Documents\status_resigned\$time"
 $lastday = ((Get-Date).AddDays(-7)) 
-Get-ADUser -filter {(whenchanged -ge $lastday -and Description -eq "resigned")} -properties name, whenchanged,Description,Department| select name, whenchanged,Description,Department |Out-File C:\Users\pirmukhammeda\Documents\status_resigned\$time\lastResignedUsers.txt
-Send-MailMessage -from "Pirmukhammed Alimkhodzhaev <PirmukhammedA@kicb.net>" `
-                 -to "Pirmukhammed Alimkhodzhaev <PirmukhammedA@kicb.net>;Dair Ekeev <daire@kicb.net>;Nasibula Dautov <NasibD@kicb.net>;Almaz Mambetov <AlmazMa@kicb.net>" `
+Get-ADUser -filter {(whenchanged -ge $lastday -and Description -eq "resigned")} -properties name, whenchanged,Description,Department| select name, whenchanged,Description,Department |Out-File Путь к файлу\Documents\status_resigned\$time\lastResignedUsers.txt
+Send-MailMessage -from "mail" `
+                 -to "mail" `
                  -subject "last resigned users" `
                  -body "Last Resigned Users." `
-                 -Attachment "C:\Users\pirmukhammeda\Documents\status_resigned\$time\lastResignedUsers.txt" `
-                 -smtpServer "kicbmail.office.kicbbsk" 
+                 -Attachment "Путь к файлу\Documents\status_resigned\$time\lastResignedUsers.txt" `
+                 -smtpServer "smpt server" 
 - оповещение по почте о последней изменений статуса "resigned"
 =================================================================================================================================================================
 $servers = (Get-ADComputer -Filter *).name
@@ -470,4 +470,3 @@ ForEach ($server in $servers) {
 Get-WmiObject -Class Win32_Product -ComputerName $server -ErrorAction SilentlyContinue| select PSComputerName,Name,Version}
 - Получение всех установленных программ с правами админа
 ===================================================================================================================================================
-
