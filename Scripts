@@ -470,3 +470,10 @@ ForEach ($server in $servers) {
 Get-WmiObject -Class Win32_Product -ComputerName $server -ErrorAction SilentlyContinue| select PSComputerName,Name,Version}
 - Получение всех установленных программ с правами админа
 ===================================================================================================================================================
+| Export-Csv -Encoding UTF8 -Path Путь к файлу\share.csv 
+- экспорт на csv файла 
+======================================================================
+$servers = (Get-ADComputer -Filter *).name
+ForEach ($server in [array]$servers) {
+gwmi win32_quickfixengineering  -ComputerName $server -ErrorAction SilentlyContinue|sort installedon -desc}
+- Получение списка обновлений KB с удаленных компов
