@@ -477,3 +477,10 @@ $servers = (Get-ADComputer -Filter *).name
 ForEach ($server in [array]$servers) {
 gwmi win32_quickfixengineering  -ComputerName $server -ErrorAction SilentlyContinue|sort installedon -desc}
 - Получение списка обновлений KB с удаленных компов
+===================================================
+$servers = gc <Путь к списку txt файла> или $servers = (Get-ADComputer -Filter *).name
+ForEach ($server in [array]$servers) {
+Resolve-DnsName -Name $server -ErrorAction SilentlyContinue |where NameHost -NE "название сервера"|ft Name, Type, TTL, Section,@{Name='operatingsystem';e={(get-adcomputer $server -properties Operatingsystem|Select-Object -property Operatingsystem )-replace ('(@)|({)|(Operatingsystem=)|(})', '')}}, @{Name='ipv4address';e={(Test-Connection -ComputerName $server -Count 1 -ErrorAction SilentlyContinue|Select ProtocolAddress )-replace ('(@)|({)|(ProtocolAddress=)|(})', '')}}
+}
+- Проверка записей из DNS Сервера с получением операционной системы из AD и пинга ip адреса
+|where NameHost -NE "название сервера"| - при необходимости
