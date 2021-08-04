@@ -484,3 +484,14 @@ Resolve-DnsName -Name $server -ErrorAction SilentlyContinue |where NameHost -NE 
 }
 - Проверка записей из DNS Сервера с получением операционной системы из AD и пинга ip адреса
 |where NameHost -NE "название сервера"| - при необходимости
+=============================================================
+Get-WmiObject -Class Win32_Product -ComputerName (Get-ADComputer -Filter *).name | select PSComputerName,Name,Version|Out-GridView
+- Получение всех установленных программ из списка компов AD
+============================================================
+$filename = '*password*.*'
+# Here we specified the file in oder to find the confidential files
+$Searchingfolder = 'I:\'
+#Here choose where files should be searching
+Get-ChildItem -Path $Searchingfolder -Filter $filename -Recurse | %{$_.Fullname}
+- Поиск файлов в указанного диска.
+===================================
