@@ -493,5 +493,17 @@ $filename = '*password*.*'
 $Searchingfolder = 'I:\'
 #Here choose where files should be searching
 Get-ChildItem -Path $Searchingfolder -Filter $filename -Recurse | %{$_.Fullname}
-- Поиск файлов в указанного диска.
+- Поиск файлов указанного диска.
 ===================================
+Get-ADUser -filter * –Properties "DisplayName", "msDS-UserPasswordExpiryTimeComputed", "Title", "manager", "department", "Enabled"  | 
+Select-Object -Property "Displayname",@{Name="ExpiryDate";Expression={[datetime]::FromFileTime($_."msDS-UserPasswordExpiryTimeComputed")}},
+"Title",@{n=”Manager Name”;e={(Get-ADuser -identity $_.Manager -properties displayname).DisplayName}},"Department", "Enabled" | 
+sort-object -property ExpiryDate | Export-Csv -Path "C:\Users\pirmukhammeda\expirydatenew.csv" -NoTypeInformation -Encoding UTF8
+- Список пользователей с датой последнего изменений пароля
+==============================================================
+(Invoke-WebRequest -Uri "kicbsp03" -UseBasicParsin).Links.Href 
+- получение ссылок сайта
+==============================================================
+Get-ADUser -filter * -Properties Office,whenCreated, whenChanged, name, displayName, description, Enabled, memberof, LastLogonDate,SamAccountName, EmailAddress|
+select Office, whenCreated, whenChanged, name, displayName, description, Enabled, @{n="memberof";e={($_.memberof -replace '(CN=|OU=|DC=)','')}}, LastLogonDate, SamAccountName, EmailAddress|Out-GridView
+- отчет AD User для аудита
