@@ -507,3 +507,23 @@ sort-object -property ExpiryDate | Export-Csv -Path "C:\Users\pirmukhammeda\expi
 Get-ADUser -filter * -Properties Office,whenCreated, whenChanged, name, displayName, description, Enabled, memberof, LastLogonDate,SamAccountName, EmailAddress|
 select Office, whenCreated, whenChanged, name, displayName, description, Enabled, @{n="memberof";e={($_.memberof -replace '(CN=|OU=|DC=)','')}}, LastLogonDate, SamAccountName, EmailAddress|Out-GridView
 - отчет AD User для аудита
+===================================================================
+import requests
+from urllib.request import urlopen
+from lxml import etree
+# get html from site and write to local file
+url = 'https://finviz.com/screener.ashx?v=111&f=geo_usa,idx_sp500&o=-pe'
+headers = {'Content-Type': 'text/html',}
+response = requests.get(url, headers=headers)
+html = response.text
+with open ('sp500_list', 'w') as f:
+    f.write(html)
+    
+# read local html file and set up lxml html parser
+local = 'insert_browser_file_path_here'
+response = urlopen(local)
+htmlparser = etree.HTMLParser()
+tree = etree.parse(response, htmlparser)
+tree.xpath('/html/body/div[2]/table/tbody/tr[4]/td/div/table/tbody/tr[4]/td/table/tbody/tr[2]/td[2]/a')
+Протестить на питоне
+===========================================================================
